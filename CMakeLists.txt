@@ -53,7 +53,8 @@ SET(SwigPackageLocation lib/swig/UDS)
 INSTALL(FILES uds.i DESTINATION ${SwigPackageLocation})
 
 # Install python stuffs
-EXECUTE_PROCESS(COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()" OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
+EXECUTE_PROCESS(COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()" OUTPUT_VARIABLE _PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
+SET(PYTHON_SITE_PACKAGES ${_PYTHON_SITE_PACKAGES} CACHE PATH "Python site packages")
 INSTALL(TARGETS ${SWIG_MODULE_uds_python_REAL_NAME} DESTINATION ${PYTHON_SITE_PACKAGES})
 INSTALL(FILES ${CMAKE_BINARY_DIR}/uds.py DESTINATION ${PYTHON_SITE_PACKAGES})
 
