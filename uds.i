@@ -5,8 +5,8 @@
 %}
 
 %{
-#include "uds.h"
-#include "uds_j2534.h"
+#include <uds.h>
+#include <uds_j2534.h>
 %}
 %include "exception.i"
 
@@ -49,7 +49,7 @@
 UDSMessage::UDSMessage(uint8_t *data, size_t length);
 #endif // SWIGPYTHON
 
-%include "iso14229.h"
-%include "uds.h"
-%include "uds_j2534.h"
+%include <iso14229.h>
+%include <uds.h>
+%include <uds_j2534.h>
 

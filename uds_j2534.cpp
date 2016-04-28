@@ -1,4 +1,5 @@
 #include "uds_j2534.h"
+#include <string.h>
 
 
 UDS_J2534::UDS_J2534(J2534ChannelPtr channel, UDS_PID tester, UDS_PID ecu, unsigned long protocolID, unsigned long flags) :

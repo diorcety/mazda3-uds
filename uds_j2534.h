@@ -23,7 +23,7 @@
 #endif // _WIN32
 
 #include "uds.h"
-#include "j2534.h"
+#include <j2534.h>
 
 class UDS_J2534;
 typedef std::shared_ptr<UDS_J2534> UDS_J2534Ptr;
