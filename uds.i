@@ -8,6 +8,10 @@
 #include <uds.h>
 #include <uds_j2534.h>
 %}
+
+// Int
+%include "stdint.i"
+
 %include "exception.i"
 
 %import <j2534.i>
@@ -47,6 +51,22 @@
 %include <pybuffer.i>
 %pybuffer_mutable_binary(uint8_t *data, size_t length);
 UDSMessage::UDSMessage(uint8_t *data, size_t length);
+
+%typemap(out) std::vector<uint8_t> {
+    if($1->empty()) {
+        %set_output(PyByteArray_FromStringAndSize(NULL, 0));
+    } else {
+        %set_output(PyByteArray_FromStringAndSize(reinterpret_cast<const char*>(&($1->at(0))), $1->size()));
+    }
+}
+
+%typemap(out) const std::vector<uint8_t> & {
+    if($1->empty()) {
+        %set_output(PyByteArray_FromStringAndSize(NULL, 0));
+    } else {
+        %set_output(PyByteArray_FromStringAndSize(reinterpret_cast<const char*>(&($1->at(0))), $1->size()));
+    }
+}
 #endif // SWIGPYTHON
 
 %include <iso14229.h>

@@ -29,7 +29,7 @@ UDSMessagePtr UDS::buildMessage(uint8_t *data, size_t length) const {
 
 
 UDSMessage::UDSMessage(uint8_t *data, size_t length) {
-    mData.reserve(length);
+    mData.resize(length);
     for(unsigned int i = 0; i < length; ++i) {
         mData[i] = data[i];
     }
