@@ -19,20 +19,19 @@ UDS::~UDS() {
 }
 
 UDSMessagePtr UDS::buildMessage(uint8_t *data, size_t length) const {
-    UDS_SID serviceID = data[0];
-    if((serviceID & UDS_SID_MASK) == UDS_SERVICE_ERR) {
-        return std::make_shared<UDSNegativeResponseMessage>(data, length);
-    } else {
-        return std::make_shared<UDSMessage>(data, length);
+    if(length > UDS_SID_OFFSET) {
+        UDS_SID serviceID = data[UDS_SID_OFFSET];
+        if ((serviceID & UDS_SID_MASK) == UDS_SERVICE_ERR) {
+            return std::make_shared<UDSNegativeResponseMessage>(data, length);
+        }
     }
+    return std::make_shared<UDSMessage>(data, length);
 }
 
 
 UDSMessage::UDSMessage(uint8_t *data, size_t length) {
     mData.resize(length);
-    for(unsigned int i = 0; i < length; ++i) {
-        mData[i] = data[i];
-    }
+    memcpy(&(mData[0]), data, length);
 }
 
 UDSMessage::~UDSMessage() {
