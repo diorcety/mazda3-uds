@@ -26,14 +26,15 @@
 #include <j2534.h>
 
 class UDS_J2534;
-typedef std::shared_ptr<UDS_J2534> UDS_J2534Ptr;
-typedef std::weak_ptr<UDS_J2534> UDS_J2534WeakPtr;
 
-class UDS_J2534_API UDS_J2534: public UDS {
+typedef std::shared_ptr <UDS_J2534> UDS_J2534Ptr;
+typedef std::weak_ptr <UDS_J2534> UDS_J2534WeakPtr;
+
+class UDS_J2534_API UDS_J2534 : public UDS {
 public:
     UDS_J2534(J2534ChannelPtr channel, UDS_PID tester, UDS_PID ecu, unsigned long protocolID, unsigned long flags);
-    virtual ~UDS_J2534();
 
+    virtual ~UDS_J2534();
 
     virtual UDSMessagePtr send(const UDSMessagePtr request, TimeType timeout);
 

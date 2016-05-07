@@ -2,7 +2,8 @@
 #include <string.h>
 
 
-UDS_J2534::UDS_J2534(J2534ChannelPtr channel, UDS_PID tester, UDS_PID ecu, unsigned long protocolID, unsigned long flags) :
+UDS_J2534::UDS_J2534(J2534ChannelPtr channel, UDS_PID tester, UDS_PID ecu, unsigned long protocolID,
+                     unsigned long flags) :
         UDS(tester, ecu), mChannel(channel), mProtocolID(protocolID), mFlags(flags) {
 
 }
@@ -28,45 +29,46 @@ UDSMessagePtr UDS_J2534::send(const UDSMessagePtr request, TimeType timeout) {
     MaskMsg.Data[0] = MaskMsg.Data[1] = MaskMsg.Data[2] = MaskMsg.Data[3] = 0xFF;
     pid2Data(mTester, &PatternMsg.Data[0]);
     pid2Data(mEcu, &FlowControlMsg.Data[0]);
-    J2534Channel::MessageFilter messageFilter = mChannel->startMsgFilter(FLOW_CONTROL_FILTER, &MaskMsg, &PatternMsg, &FlowControlMsg);
+    J2534Channel::MessageFilter messageFilter = mChannel->startMsgFilter(FLOW_CONTROL_FILTER, &MaskMsg, &PatternMsg,
+                                                                         &FlowControlMsg);
 
     UDSMessagePtr ret;
     try {
         mChannel->ioctl(CLEAR_RX_BUFFER, 0, 0);
 
-        std::vector<PASSTHRU_MSG> msgs;
+        std::vector <PASSTHRU_MSG> msgs;
         msgs.resize(1);
         PASSTHRU_MSG *msg = &msgs[0];
 
         msg->ProtocolID = mProtocolID;
         msg->TxFlags = mFlags;
-        const std::vector<uint8_t> &data = request->getData();
+        const std::vector <uint8_t> &data = request->getData();
         pid2Data(mEcu, &msg->Data[0]);
         memcpy(&(msg->Data[4]), &(data[0]), data.size());
         msg->DataSize = data.size() + 4;
 
         /* Write of message */
-        if(mChannel->writeMsgs(msgs, timeout) != 1) {
+        if (mChannel->writeMsgs(msgs, timeout) != 1) {
             throw UDSException("Can't send the message");
         }
 
         /* Start of message */
-        if(mChannel->readMsgs(msgs, timeout) == 0 || !(msg->RxStatus & START_OF_MESSAGE)) {
+        if (mChannel->readMsgs(msgs, timeout) == 0 || !(msg->RxStatus & START_OF_MESSAGE)) {
             throw UDSException("Invalid state");
         }
 
         /* Read the message */
-        if(mChannel->readMsgs(msgs, timeout) == 0) {
+        if (mChannel->readMsgs(msgs, timeout) == 0) {
             throw UDSException("Invalid state");
         }
 
         /* Sanity check */
-        if(msg->DataSize < 4) {
+        if (msg->DataSize < 4) {
             throw UDSException("Invalid data size");
         }
         ret = buildMessage(&(msg->Data[4]), msg->DataSize - 4);
         mChannel->stopMsgFilter(messageFilter);
-    } catch(...) {
+    } catch (...) {
         mChannel->stopMsgFilter(messageFilter);
         throw;
     }
