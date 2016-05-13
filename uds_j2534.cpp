@@ -34,6 +34,7 @@ UDSMessagePtr UDS_J2534::send(const UDSMessagePtr request, TimeType timeout) {
 
     UDSMessagePtr ret;
     try {
+        size_t ret;
         mChannel->ioctl(CLEAR_RX_BUFFER, 0, 0);
 
         std::vector <PASSTHRU_MSG> msgs;
@@ -48,18 +49,24 @@ UDSMessagePtr UDS_J2534::send(const UDSMessagePtr request, TimeType timeout) {
         msg->DataSize = data.size() + 4;
 
         /* Write of message */
-        if (mChannel->writeMsgs(msgs, timeout) != 1) {
+        ret = mChannel->writeMsgs(msgs, timeout);
+        if (ret != 1) {
             throw UDSException("Can't send the message");
         }
 
         /* Start of message */
-        if (mChannel->readMsgs(msgs, timeout) == 0 || !(msg->RxStatus & START_OF_MESSAGE)) {
-            throw UDSException("Invalid state");
+        ret = mChannel->readMsgs(msgs, timeout);
+        if (ret == 0) {
+            throw UDSException("No message read");
+        }
+        if (!(msg->RxStatus & START_OF_MESSAGE)) {
+            throw UDSException("Not start of message");
         }
 
         /* Read the message */
-        if (mChannel->readMsgs(msgs, timeout) == 0) {
-            throw UDSException("Invalid state");
+        ret = mChannel->readMsgs(msgs, timeout);
+        if (ret == 0) {
+            throw UDSException("No message read");
         }
 
         /* Sanity check */

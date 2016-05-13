@@ -3,7 +3,7 @@
 static UDSMessagePtr buildMessage(uint8_t *data, size_t length) {
     if (length > UDS_SID_OFFSET) {
         UDS_SID serviceID = data[UDS_SID_OFFSET];
-        if ((serviceID & UDS_SID_MASK) == UDS_SERVICE_ERR) {
+        if ((serviceID & UDS_SID_MASK) == UDS_SERVICES_ERR) {
             return std::make_shared<UDSNegativeResponseMessage>(data, length);
         }
     }
