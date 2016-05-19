@@ -83,7 +83,7 @@ public:
 
     virtual ~UDS();
 
-    virtual UDSMessagePtr send(const UDSMessagePtr request, TimeType timeout) = 0;
+    virtual UDSMessagePtr send(const UDSMessagePtr &request, TimeType timeout) = 0;
 
 protected:
     UDSMessagePtr buildMessage(uint8_t *data, size_t length) const;

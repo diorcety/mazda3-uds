@@ -36,7 +36,7 @@ public:
 
     virtual ~UDS_J2534();
 
-    virtual UDSMessagePtr send(const UDSMessagePtr request, TimeType timeout);
+    virtual UDSMessagePtr send(const UDSMessagePtr &request, TimeType timeout);
 
 private:
     J2534ChannelPtr mChannel;

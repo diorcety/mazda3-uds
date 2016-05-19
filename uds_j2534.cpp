@@ -19,7 +19,7 @@ static void pid2Data(UDS_PID pid, uint8_t *data) {
     data[3] = 0xFF & (pid >> 0);
 }
 
-UDSMessagePtr UDS_J2534::send(const UDSMessagePtr request, TimeType timeout) {
+UDSMessagePtr UDS_J2534::send(const UDSMessagePtr &request, TimeType timeout) {
     PASSTHRU_MSG MaskMsg;
     PASSTHRU_MSG PatternMsg;
     PASSTHRU_MSG FlowControlMsg;
