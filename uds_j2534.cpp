@@ -1,6 +1,7 @@
 #include "uds_j2534.h"
 #include <string.h>
 
+#define J2534_DATA_OFFSET 4
 
 UDS_J2534::UDS_J2534(J2534ChannelPtr channel, UDS_PID tester, UDS_PID ecu, unsigned long protocolID,
                      unsigned long flags) :
@@ -20,6 +21,7 @@ static void pid2Data(UDS_PID pid, uint8_t *data) {
 }
 
 UDSMessagePtr UDS_J2534::send(const UDSMessagePtr &request, TimeType timeout) {
+    size_t data_offset = J2534_DATA_OFFSET;
     PASSTHRU_MSG MaskMsg;
     PASSTHRU_MSG PatternMsg;
     PASSTHRU_MSG FlowControlMsg;
@@ -34,7 +36,7 @@ UDSMessagePtr UDS_J2534::send(const UDSMessagePtr &request, TimeType timeout) {
 
     UDSMessagePtr ret;
     try {
-        size_t ret;
+        size_t size;
         mChannel->ioctl(CLEAR_RX_BUFFER, 0, 0);
 
         std::vector <PASSTHRU_MSG> msgs;
@@ -45,35 +47,31 @@ UDSMessagePtr UDS_J2534::send(const UDSMessagePtr &request, TimeType timeout) {
         msg->TxFlags = mFlags;
         const std::vector <uint8_t> &data = request->getData();
         pid2Data(mEcu, &msg->Data[0]);
-        memcpy(&(msg->Data[4]), &(data[0]), data.size());
-        msg->DataSize = data.size() + 4;
+        memcpy(&(msg->Data[data_offset]), &(data[0]), data.size());
+        msg->DataSize = data.size() + data_offset;
 
         /* Write of message */
-        ret = mChannel->writeMsgs(msgs, timeout);
-        if (ret != 1) {
+        size = mChannel->writeMsgs(msgs, timeout);
+        if (size != 1) {
             throw UDSException("Can't send the message");
         }
 
-        /* Start of message */
-        ret = mChannel->readMsgs(msgs, timeout);
-        if (ret == 0) {
-            throw UDSException("No message read");
-        }
-        if (!(msg->RxStatus & START_OF_MESSAGE)) {
-            throw UDSException("Not start of message");
-        }
-
-        /* Read the message */
-        ret = mChannel->readMsgs(msgs, timeout);
-        if (ret == 0) {
-            throw UDSException("No message read");
+        /* Get message */
+        while(true) {
+            size = mChannel->readMsgs(msgs, timeout);
+            if (size == 0) {
+                throw UDSException("No message read");
+            }
+            if (!(msg->RxStatus & START_OF_MESSAGE)) {
+                break;
+            }
         }
 
         /* Sanity check */
-        if (msg->DataSize < 4) {
+        if (msg->DataSize < data_offset) {
             throw UDSException("Invalid data size");
         }
-        ret = buildMessage(&(msg->Data[4]), msg->DataSize - 4);
+        ret = buildMessage(&(msg->Data[data_offset]), msg->DataSize - data_offset);
         mChannel->stopMsgFilter(messageFilter);
     } catch (...) {
         mChannel->stopMsgFilter(messageFilter);
