@@ -6,7 +6,18 @@
 UDS_J2534::UDS_J2534(J2534ChannelPtr channel, UDS_PID tester, UDS_PID ecu, unsigned long protocolID,
                      unsigned long flags) :
         UDS(tester, ecu), mChannel(channel), mProtocolID(protocolID), mFlags(flags) {
+			
+	// Set BS and STMIN
+	SCONFIG CfgItem[2];
+	SCONFIG_LIST Input;
 
+	CfgItem[0].Parameter = ISO15765_BS;
+	CfgItem[0].Value = 0x20; /* BlockSize is 32 frames */
+	CfgItem[1].Parameter = ISO15765_STMIN;
+	CfgItem[1].Value = 0x01; /* SeparationTime is 1 millisecond */
+	Input.NumOfParams = 2; /* Configuration list has 2 items */
+	Input.ConfigPtr = CfgItem;
+	channel->ioctl(SET_CONFIG, &Input, NULL);
 }
 
 UDS_J2534::~UDS_J2534() {
@@ -41,14 +52,14 @@ UDSMessagePtr UDS_J2534::send(const UDSMessagePtr &request, TimeType timeout) {
 
         std::vector <PASSTHRU_MSG> msgs;
         msgs.resize(1);
-        PASSTHRU_MSG *msg = &msgs[0];
+        PASSTHRU_MSG &msg = msgs[0];
 
-        msg->ProtocolID = mProtocolID;
-        msg->TxFlags = mFlags;
+        msg.ProtocolID = mProtocolID;
+        msg.TxFlags = mFlags;
         const std::vector <uint8_t> &data = request->getData();
-        pid2Data(mEcu, &msg->Data[0]);
-        memcpy(&(msg->Data[data_offset]), &(data[0]), data.size());
-        msg->DataSize = data.size() + data_offset;
+        pid2Data(mEcu, &msg.Data[0]);
+        memcpy(&(msg.Data[data_offset]), &(data[0]), data.size());
+        msg.DataSize = data.size() + data_offset;
 
         /* Write of message */
         size = mChannel->writeMsgs(msgs, timeout);
@@ -62,16 +73,16 @@ UDSMessagePtr UDS_J2534::send(const UDSMessagePtr &request, TimeType timeout) {
             if (size == 0) {
                 throw UDSException("No message read");
             }
-            if (!(msg->RxStatus & START_OF_MESSAGE)) {
+            if (!(msg.RxStatus & START_OF_MESSAGE)) {
                 break;
             }
         }
 
         /* Sanity check */
-        if (msg->DataSize < data_offset) {
+        if (msg.DataSize < data_offset) {
             throw UDSException("Invalid data size");
         }
-        ret = buildMessage(&(msg->Data[data_offset]), msg->DataSize - data_offset);
+        ret = buildMessage(&(msg.Data[data_offset]), msg.DataSize - data_offset);
         mChannel->stopMsgFilter(messageFilter);
     } catch (...) {
         mChannel->stopMsgFilter(messageFilter);
