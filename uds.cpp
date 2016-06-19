@@ -1,4 +1,5 @@
 #include "uds.h"
+#include <string.h>
 
 static UDSMessagePtr buildMessage(uint8_t *data, size_t length) {
     if (length > UDS_SID_OFFSET) {
