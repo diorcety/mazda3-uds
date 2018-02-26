@@ -71,17 +71,19 @@ UDSMessagePtr UDS_J2534::send(const UDSMessagePtr &request, TimeType timeout) {
         msgs.resize(1);
         PASSTHRU_MSG &msg = msgs[0];
 
-        msg.ProtocolID = mProtocolID;
-        msg.TxFlags = mFlags;
-        const std::vector <uint8_t> &data = request->getData();
-        pid2Data(mEcu, &msg.Data[0]);
-        memcpy(&(msg.Data[data_offset]), &(data[0]), data.size());
-        msg.DataSize = data.size() + data_offset;
+        if (request) {
+            msg.ProtocolID = mProtocolID;
+            msg.TxFlags = mFlags;
+            const std::vector <uint8_t> &data = request->getData();
+            pid2Data(mEcu, &msg.Data[0]);
+            memcpy(&(msg.Data[data_offset]), &(data[0]), data.size());
+            msg.DataSize = data.size() + data_offset;
 
-        /* Write of message */
-        size = mChannel->writeMsgs(msgs, timeout);
-        if (size != 1) {
-            throw UDSException("Can't send the message");
+            /* Write of message */
+            size = mChannel->writeMsgs(msgs, timeout);
+            if (size != 1) {
+                throw UDSException("Can't send the message");
+            }
         }
 
         /* Get message */
