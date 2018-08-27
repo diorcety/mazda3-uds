@@ -29,9 +29,9 @@ UDS_J2534::UDS_J2534(J2534ChannelPtr channel, UDS_PID tester, UDS_PID ecu, unsig
     SCONFIG_LIST Input;
 
     CfgItem[0].Parameter = ISO15765_BS;
-    CfgItem[0].Value = 0x5; /* BlockSize is 32 frames */
+    CfgItem[0].Value = 0x20; /* BlockSize is 32 frames */
     CfgItem[1].Parameter = ISO15765_STMIN;
-    CfgItem[1].Value = 0x01; /* SeparationTime is 1 millisecond */
+    CfgItem[1].Value = 0x02; /* SeparationTime is 2 millisecond */
     Input.NumOfParams = 2; /* Configuration list has 2 items */
     Input.ConfigPtr = CfgItem;
     channel->ioctl(SET_CONFIG, &Input, NULL);
